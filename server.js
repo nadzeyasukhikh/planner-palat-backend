@@ -1,6 +1,33 @@
 const express = require('express');
-const app = express();
 
+const multer = require('multer');
+const app = express();
+const Sequelize = require('sequelize');
+require('dotenv').config();
+const path = require('path');
+const cors = require('cors');
+
+app.use(cors({
+  origin: 'http://localhost:3000', 
+  methods: 'GET,POST,DELETE', 
+  credentials: true 
+}));
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      cb(null, 'uploads/'); 
+    },
+    filename: function(req, file, cb) {
+      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname)); 
+    }
+  });
+
+  const upload = multer({ storage: storage });
+  
+  
+  const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
+    host: process.env.DB_HOST,
+    dialect: 'postgres'
+  });
 
 const Category = require('./models/category');
 
@@ -22,12 +49,12 @@ app.post('/categories', async (req, res) => {
   }
 });
 
-const Recipe = require('./models/recipe'); // Импорт модели рецепта
+const Recipe = require('./models/recipe'); 
 
 app.get('/recipes', async (req, res) => {
   try {
     const recipes = await Recipe.findAll({
-      include: [{ model: Category }] // Включение категорий
+      include: [{ model: Category }] 
     });
     res.json(recipes);
   } catch (error) {
@@ -44,7 +71,7 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
         title, 
         recipeText, 
         imageUrl,
-        categoryId // Связь с категорией
+        categoryId 
       });
   
       res.status(201).json(recipe);
@@ -68,18 +95,11 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
       res.status(500).send(error.message);
     }
   });
-  const multer = require('multer');
-
-  const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-      cb(null, 'uploads/'); // Папка для сохранения файлов
-    },
-    filename: function(req, file, cb) {
-      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname)); // Формирование имени файла
-    }
+  
+  app.get('/', (req, res) => {
+    res.send('Welcome to Planner Palat Backend!');
   });
   
-  const upload = multer({ storage: storage });
 
 
   app.post('/upload', upload.single('image'), (req, res) => {
@@ -87,14 +107,19 @@ app.post('/recipes', upload.single('image'), async (req, res) => {
       return res.status(400).send('Ошибка: файл не загружен.');
     }
   
-    // URL файла (зависит от вашей конфигурации сервера)
+   
     const fileUrl = `http://localhost:3001/uploads/${req.file.filename}`;
   
-    // Логика сохранения URL в базу данных (зависит от вашей схемы БД)
+    
   
     res.json({ message: 'Файл успешно загружен', imageUrl: fileUrl });
   });
 
+  app.use('/uploads', express.static('uploads'));
+
+  app.use(express.json());
+
+  
   sequelize.query("SELECT NOW()")
   .then(([results, metadata]) => {
     console.log('Time in DB:', results);
