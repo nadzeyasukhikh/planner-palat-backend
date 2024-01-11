@@ -78,14 +78,20 @@ app.get('/recipes', async (req, res) => {
 
 app.post('/recipes', upload.single('image'), async (req, res) => {
   try {
-    const { title, recipeText, categoryId } = req.body;
+    const { title, recipeText, categoryName } = req.body;
     const imageUrl = req.file ? `http://localhost:3001/uploads/${req.file.filename}` : null;
+
+    const category = await Category.findOne({ where: { name: categoryName } });
+
+    if (!category) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
 
     const recipe = await Recipe.create({
       title,
       recipeText,
       imageUrl,
-      categoryId
+      CategoryId: category.id
     });
 
     res.status(201).json(recipe);
