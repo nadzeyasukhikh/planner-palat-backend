@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('./config'); // Путь к файлу конфигурации Sequelize
-const Category = require('./models/category'); // Путь к модели Category
+const sequelize = require('./config'); 
+const Category = require('./models/category'); 
 
 const initialCategories = [
   { name: 'breakfast', imageUrl: '/uploads/breakfast.jpg' },

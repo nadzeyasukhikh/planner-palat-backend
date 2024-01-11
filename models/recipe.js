@@ -13,10 +13,12 @@ const Recipe = sequelize.define('Recipe', {
   imageUrl: {
     type: DataTypes.STRING
   }
+}, {
+  freezeTableName: true,
+  timestamps: true 
 });
 
 Recipe.belongsTo(Category);
 Category.hasMany(Recipe);
 
 module.exports = Recipe;
-
