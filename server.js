@@ -66,11 +66,21 @@ app.post('/categories', async (req, res) => {
 
 // Маршруты для рецептов
 app.get('/recipes', async (req, res) => {
+  const categoryId = parseInt(req.query.categoryId); // Преобразовали categoryId в целое число
   try {
-    const recipes = await Recipe.findAll({
-      include: [{ model: Category }]
-    });
-    res.json(recipes);
+    if (!isNaN(categoryId)) { // Проверяем, является ли categoryId числом
+      const recipes = await Recipe.findAll({
+        where: { CategoryId: categoryId },
+        include: [{ model: Category }]
+      });
+      res.json(recipes);
+    } else {
+      // Если categoryId не указан или не является числом, вернуть все рецепты
+      const recipes = await Recipe.findAll({
+        include: [{ model: Category }]
+      });
+      res.json(recipes);
+    }
   } catch (error) {
     res.status(500).send(error.message);
   }
