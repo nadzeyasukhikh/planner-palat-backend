@@ -126,6 +126,23 @@ app.delete('/recipes/:id', async (req, res) => {
   }
 });
 
+// Маршрут для получения рецепта по ID
+app.get('/recipes/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const recipe = await Recipe.findByPk(id, {
+      include: [{ model: Category }]
+    });
+    if (recipe) {
+      res.json(recipe);
+    } else {
+      res.status(404).send("Рецепт не найден");
+    }
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
 // Маршрут для загрузки изображений
 app.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) {
